@@ -1,0 +1,153 @@
+
+
+#Header : x-access-token 
+
+Setup :
+-npm init 
+
+-npm install 
+
+-node server.js 
+
+
+#Route Rooteur : 
+http://localhost:8080/api/v1.0/
+
+
+#ROUTES:
+
+
+#signup new account (POST)
+{ 
+http://localhost:8080/api/v1.0/auth/signup
+
+------------------------------------------
+    body -> row -> JSON 
+    {
+        "username": "chiheb",
+        "email": "chihebbjm@gmail.com",
+        "password": "password",
+        "roles: ["user","moderator","admin"]
+    }
+------------------------------------------
+    Res ==>message
+
+}
+
+
+#login an account (POST)
+{
+http://localhost:8080/api/v1.0/auth/signup
+
+------------------------------------------
+    body -> row -> JSON 
+    {
+        "username":"chiheb",
+        "password":password"
+    }
+------------------------------------------
+    Res ==>accessToken
+
+}
+
+
+
+#retrieve public content (GET)
+{
+http://localhost:8080/api/v1.0/all
+
+------------------------------------------
+    header -> 
+    {
+        empty
+    }
+------------------------------------------
+    Res ==>message(public content)
+
+}
+
+
+#access User’s content (GET)
+{
+http://localhost:8080/api/v1.0/user
+
+------------------------------------------
+    header -> 
+    {
+        x-access-token: "Token that given to user"
+    }
+------------------------------------------
+    Res ==>message(User Content)
+
+}
+
+
+#access Moderator’s content (GET)
+{
+http://localhost:8080/api/v1.0/mod
+
+------------------------------------------
+    header -> 
+    {
+        x-access-token: "Token that given to moderator"
+    }
+------------------------------------------
+    Res ==>message(Mod Content)
+
+}
+
+
+#access Admin’s content (GET)
+{
+http://localhost:8080/api/v1.0/admin
+
+------------------------------------------
+    header -> 
+    {
+        x-access-token: "Token that given to admin"
+    }
+------------------------------------------
+    Res ==>message(Admin Content)
+}
+
+#add Quotes content (POST)
+{
+    http://localhost:8080/api/v1.0/quotes
+    header -> 
+    {
+        x-access-token: "Token that given to admin"
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SHOW CASE : 
+https://bezkoder.com/node-js-mongodb-auth-jwt/
+

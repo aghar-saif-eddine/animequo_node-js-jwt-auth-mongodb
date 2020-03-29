@@ -10,19 +10,67 @@ module.exports = function(app) {
     next();
   });
 
-  app.get("/api/test/all", controller.allAccess);
 
-  app.get("/api/test/user", [authJwt.verifyToken], controller.userBoard);
+
 
   app.get(
-    "/api/test/mod",
+    "/api/v1.0/all",
+    controller.allAccess
+  );
+
+
+
+  app.get(
+    "/api/v1.0/user",
+    [authJwt.verifyToken],
+    controller.userBoard
+  );
+
+
+
+
+  app.get(
+    "/api/v1.0/mod",
     [authJwt.verifyToken, authJwt.isModerator],
     controller.moderatorBoard
   );
 
+
+
+
   app.get(
-    "/api/test/admin",
+    "/api/v1.0/admin",
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.adminBoard
   );
+
+
+
+
+  
+  //adding the add quote route :
+//verifierToken + Admin only 
+app.post(
+  "/api/v1.0/quotes",
+  [authJwt.verifyToken,authJwt.isAdmin],
+  controller.addQuotes
+);
+
+
+
+
+  //adding the add catgeory route :
+//verifierToken + Admin only 
+app.post(
+  "/api/v1.0/category",
+  [authJwt.verifyToken,authJwt.isAdmin],
+  controller.addCategory
+);
+
+
+
+
+
 };
+
+

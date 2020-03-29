@@ -10,14 +10,15 @@ module.exports = function(app) {
     next();
   });
 
+  //creating new user
   app.post(
-    "/api/auth/signup",
-    [
+    "/api/v1.0/auth/signup",    [
       verifySignUp.checkDuplicateUsernameOrEmail,
       verifySignUp.checkRolesExisted
     ],
     controller.signup
   );
 
-  app.post("/api/auth/signin", controller.signin);
+  //user login 
+  app.post("/api/v1.0/auth/signin", controller.signin);
 };
