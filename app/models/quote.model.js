@@ -16,7 +16,7 @@ const QuotesSchema =new Schema({
         required: true,
         default: Date.now
       },
-    catgeory: [{ type: Schema.Types.ObjectId, ref: 'Category' }]
+    categorys: [{ type: Schema.Types.ObjectId, ref: "Category" }]
 
 });
 module.exports=mongoose.model('Quote',QuotesSchema);
