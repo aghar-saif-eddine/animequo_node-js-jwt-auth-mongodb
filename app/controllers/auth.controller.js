@@ -13,6 +13,7 @@ exports.signup = (req, res) => {
     password: bcrypt.hashSync(req.body.password, 8)
   });
 
+  if ((req.body.roles.length)===1){  
   user.save((err, user) => {
     if (err) {
       res.status(500).send({ message: err });
@@ -61,7 +62,10 @@ exports.signup = (req, res) => {
     }
   });
 
-  
+}else{
+  res.status(500).send({message:"error check your roles !"})
+}
+
 };
 
 exports.signin = (req, res) => {

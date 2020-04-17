@@ -20,6 +20,9 @@ verifyToken = (req, res, next) => {
   });
 };
 
+
+
+
 isAdmin = (req, res, next) => {
   User.findById(req.userId).exec((err, user) => {
     if (err) {
@@ -50,6 +53,10 @@ isAdmin = (req, res, next) => {
     );
   });
 };
+
+
+
+
 
 isModerator = (req, res, next) => {
   User.findById(req.userId).exec((err, user) => {
@@ -82,9 +89,51 @@ isModerator = (req, res, next) => {
   });
 };
 
+
+
+
+
+
+isUser =(req, res) =>{
+  User.findById(req.userId).exec((err, user) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+
+    Role.find(
+      {
+        _id: { $in: user.roles }
+      },
+      (err, roles) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+
+        for (let i = 0; i < roles.length; i++) {
+          if (roles[i].name === "user") {
+            return res.status(200).send(user);
+            
+          }
+        }
+
+        res.status(403).send({ message: "Requir User Role!" });
+        return;
+      }
+    );
+  });
+}
+
+
+
+
+
+
 const authJwt = {
   verifyToken,
   isAdmin,
-  isModerator
+  isModerator,
+  isUser
 };
 module.exports = authJwt;

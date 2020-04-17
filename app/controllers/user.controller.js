@@ -1,21 +1,26 @@
-var validator = require('validator');
+const { authJwt } = require("../middlewares"); 
 var Quote =require("../models/quote.model");
 var Category =require("../models/category.model");
 var issue_proposition=require("../models/issue_proposition");
 var user =require("../models/user.model");
 var Role =require("../models/role.model");
+
+
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
 };
+
 
 exports.userBoard = (req, res) => {
   res.status(200).send("User Content.");
 
 };
 
+
 exports.adminBoard = (req, res) => {
   res.status(200).send("Admin Content.");
 };
+
 
 exports.moderatorBoard = (req, res) => {
   res.status(200).send("Moderator Content.");
@@ -32,7 +37,7 @@ exports.addCategory =(req,res)=>{
 
   console.log(req.body);
   var newCategory= new Category({
-    title: req.body.title,
+    title: req.body.title.toLowerCase(),
     description:req.body.description
   });
 
@@ -56,6 +61,19 @@ exports.addCategory =(req,res)=>{
 
 
 
+exports.getallCategory =(req,res)=>{
+
+  Category.find()
+  .then(category=>{
+    res.json(category);
+  }).catch(err=>{
+      res.status(500).send({message:err.message || "OPS some error  occurred while retrieving"});  
+  });
+
+};
+
+
+
 exports.addQuotes = (req,res)=>{
   //make sure to check if the quote is alerdy exicte :
   //console.log("Start Posting new Quote !")
@@ -67,13 +85,13 @@ exports.addQuotes = (req,res)=>{
 
   });
 
-
+ 
 newQuote.save((err, newQuote) => {
   if (err) {
     res.status(500).send({ message: err });
     return;
   }
-
+  
   if (req.body.categorys) {
     Category.find(
       {
@@ -101,95 +119,158 @@ newQuote.save((err, newQuote) => {
   }
 
 
+
 });
 
 
-
-exports.moderatorBoard = (req, res) => {
-  res.status(200).send("Moderator Content.");
-};
-
-
-
-
-
-
-
-
-
-
-
-   
 };
 
 
 
 
 exports.deleteCategory = (req, res) => {
-    //#1 deleting fom the Catgeorys Array from the List of quotes 
-  Category.findById(req.params.categoryId)
+//#1 finding the req.params.categoryId in list of category
+Category.findById(req.params.categoryId)
     .then(category_and_delete1=>{
       if (!category_and_delete1){
         return res.status(404).send({
           message:"Category not found with id "+req.params.categoryId
         });
-        }
+      }
+
+
+
         //Else Delete the Category from the Quotes
-        Quote.find().exec((err, quote)=>{
-          if (err) {
-            res.status(500).send({ message: err });
-            return;
-          }
-          Category.find(
-            {
-              _id:{ $in: Quote.categorys}
-            },
-            (err, categorys) => {
-              if (err) {
-                res.status(500).send({ message: err });
-                return;
-              }
-      
-              for (let i = 0; i < categorys.length; i++) {
-                if (categorys[i].name === req.params.categoryId) {
-                 console.log("We find the Catgeory that well be deleted !")
-                  return;
-                }
-              }
-      
-              res.status(403).send({ message: "Require Admin Role!" });
-              return;
-            }
-          );
-        });
+        Quote.updateMany(
+          { $pull : { "categorys" : { $in:[req.params.categoryId] }}})
+          //{"categorys": { $elemMatch:{ $in: [category_and_delete1._id]}}})
+            .then(search_match=>{
+            if (!search_match){ return res.status(404).send({message:"not found"}); }
+
+
+
+                      //#2 deleting from the category list 
+                        //0==>fetch the list of category and if not equl to req.params.categoryId add into new array (for ..) 
+                        //1==>set the new upadte wiht new array (the same work like updateQuote )
+                        //chek if the Id of category passing in parmas if exicte :
+                  
+                        Category.findByIdAndRemove(req.params.categoryId)
+                        .then(category_and_delete2 =>{
+                            if (!category_and_delete2){
+                                return res.status(404).send({
+                                  message:"Category not found with id "+req.params.categoryId
+                                });
+
+                            }
+                            //Else Delete the Category
+                            res.send({message: "Category deleted successfully!"});
+                        }).catch(err =>{
+                          if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+                            return res.status(404).send({
+                                message: "Category not found with id " + req.params.categoryId
+                            });                
+                        }
+
+                        return res.status(500).send({
+                          message: "Could not delete Category with id " + req.params.categoryId
+                          });
+
+                        });
+                      //#2 deleting from the category list
+
+        
+          //(RESPONSE) Else Delete the Category from the Quotes              
+          res.status(200).send(search_match);
+            
+          }).catch(err=>{
+            return res.status(201).send({message:err});
+          });
+          //Else Delete the Category from the Quotes
+
+
 
       });
+      //#1 finding the req.params.categoryId in list of category
+
+
+//END
+};
 
 
 
-    //#2 deleting from the category list 
-      //chek if the Id of category passing in parmas if exicte :
-    Category.findByIdAndRemove(req.params.categoryId)
-    .then(category_and_delete2 =>{
-        if (!category_and_delete2){
-            return res.status(404).send({
-              message:"Category not found with id "+req.params.categoryId
-            });
-
-        }
-        //Else Delete the Category
-        res.send({message: "Category deleted successfully!"});
-    }).catch(err =>{
-      if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+exports.updateCategory =(req,res)=>{
+  //Cheking if the body is not empty :
+  if ((!req.body.title)||(!req.body.description)){
+    return res.status(400).send({message:"Check your info can not be empty !"});
+  }
+  Category.findByIdAndUpdate(req.params.categoryId,{
+    title:req.body.title.toLowerCase(),
+    description:req.body.description
+  }
+  ,{new:true})
+  .then(category_updated=>{
+    if (!category_updated){
+      return res.status(404).send({message:"Category not found wuth this id"+req.params.categoryId});
+    }
+      return res.status(400).send(category_updated)
+  }).catch(err => {
+    if(err.kind === 'ObjectId') {
         return res.status(404).send({
-            message: "Category not found with id " + req.params.taskId
+            message: "Category not found with id " + req.params.categoryId
         });                
     }
-
     return res.status(500).send({
-      message: "Could not delete Category with id " + req.params.taskId
-      });
+        message: "Error updating Category with id " + req.params.categoryId
+    });
+});
 
+};
+
+
+
+
+exports.SearchQuoteByCategory =(req,res)=>{
+  Category.findOne(
+    {
+     title:req.params.categoryTitle.toLowerCase()
+    },
+    (err, category) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+      //You need to Fetch Use the === admin TIPS in authJwt 
+      Quote.find({categorys:{ $in :category._id}})
+      .then(match_search=>{
+        if (!match_search){
+          res.status(404).json({message:"error we can not finding Quotes with this category id"});
+          return;
+        }
+
+        return res.status(200).send(match_search);
+      
+    }
+  ).catch(err=>{
+    
+    return res.status(404).json({message:err.message});
+    
+  });
+ 
+  });
+
+
+};
+
+
+
+exports.SearchQuoteByAuthor=(req,res)=>{
+    Quote.find({author:{ $in :req.params.author}},
+      (err,search_res)=>{
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+      return res.status(200).send(search_res);
     });
 
 };
@@ -257,6 +338,64 @@ exports.deleteQuotes=(req,res) =>{
 
 
 
+exports.updateQuotes =(req,res)=>{
+
+//0==> checking if the req.body empty :
+if ((!req.body.quote)||(!req.body.author)||(req.body.categorys.length==0)){
+  return res.status(400).send({message:"you pass empty fields"});
+}
+
+
+//2==> convert all the item of req.body.categorys into lowercase :
+lower_categorys= String(req.body.categorys).toLowerCase().split(",");
+req.body.categorys=lower_categorys;
+//console.log(req.body.categorys);
+
+//1==> changing the title of req.body.categorys into the there ids in the categorys models :
+//3==> checking if the any item in req.body.categorys are repeat
+if (req.body.categorys) {
+
+  Category.find(
+    {
+      title: { $in: req.body.categorys}
+    },
+    (err, categorys) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      let categorys_names=categorys.map(category => category._id);
+      //console.log(categorys_names);
+
+        //4==> set the $changing:
+        Quote.updateOne({_id:req.params.quoteId},
+          {$set: 
+            {
+            "categorys":categorys_names,
+            "quote":req.body.quote,
+            "author":req.body.author
+            }
+          }
+        ).then(upade_quote=>{
+          if (!upade_quote){
+            res.status(404).send({message:"error we can not founding this id "});
+          }
+          res.status(200).send(upade_quote);
+        }).catch(err=>{
+          res.status(201).send({message:"error "+err.message});
+        });
+
+
+    }
+  );
+} else{
+  res.json({success: false, msg: 'Save Quote failed.' });
+}
+
+};
+
+
 exports.addIssuePropostion=(req,res,next)=>{
 
   const newIssueprop =new  issue_proposition({
@@ -268,20 +407,13 @@ exports.addIssuePropostion=(req,res,next)=>{
 
   newIssueprop.save()
   .then(data =>{
-      res.json({success: true, msg: 'Successful add new Issue/Propsition submit !'+data});
+      res.json({success: true, msg: 'Successful add new Issue Propsition submit !'+data});
     
   }).catch(err =>{
       //res.status(500).send({message: err.message || "Save quote failed."});
-      res.json({success: false, msg: 'adding new  Issue,Proposition failed !'+ err.message });
+      res.json({success: false, msg: 'adding new  Issue Proposition failed !'+ err.message });
     
   });
-
-
-  res.json({success:false,msg:'Adding new Issue,Proposition failed'})
-  next();
-
-  
-
 
 
 };
@@ -304,10 +436,10 @@ issue_proposition.find()
 exports.deleteIssuePropostion=(req,res)=>{
   issue_proposition.findByIdAndRemove(req.params.constructioId)
     .then(data=>{
-        if (data){
+        if (!data){
           res.status(404).send({message:"This submit not found with this id "+req.params.constructioId});
         }
-        res.status(200).send({message:"This submit has Deleted successfully ! "+issue_proposition._id })
+        res.status(200).send({message:"This submit has Deleted successfully ! "})
     }).catch(err=>{
       if(err.kind === 'ObjectId' || err.name === 'NotFound') {f
         return res.status(404).send({
@@ -317,48 +449,135 @@ exports.deleteIssuePropostion=(req,res)=>{
       }
     return res.status(500).send({message: "Could not delete task with id " + req.params.taskId});
 });
+
 };
 
 
 
 exports.getallusers=(req,res)=>{
-  //getting all users not the Admin 
-  user.find()
-    .then(list_user=>{
-      if (!list_user){
-        res.status(404).json({message:"error we can not finding this user id"});
+  //getting all users not the Admin
+  //get the id of user role: 
+  Role.findOne(
+    {
+     name:"user"
+    },
+    (err, roles) => {
+      if (err) {
+        res.status(500).send({ message: err });
         return;
       }
-
-      for (let i=0;i<list_user.length ; i++){
-        //console.log(list_user[i].roles)
-        roles_list=list_user[i].roles;
-        for (let j=0;j<roles_list.length;j++){
-          console.log(roles_list[j]);
+      user.find({roles:{ $in :roles._id}})
+      .then(list_user=>{
+        if (!list_user){
+          res.status(404).json({message:"error we can not finding this user id"});
+          return;
         }
-        
+
+        return res.status(200).send(list_user);
+      
+    }
+  );
+ 
+  });
+
+};
+
+
+
+
+exports.getalladmin=(req,res)=>{
+  //getting all users not the Admin
+  //get the id of user role: 
+  Role.findOne(
+    {
+     name:"admin"
+    },
+    (err, roles) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
       }
+      user.find({roles:{ $in :roles._id}})
+      .then(list_user=>{
+        if (!list_user){
+          res.status(404).json({message:"error we can not finding this user id"});
+          return;
+        }
 
-    });
+        return res.status(200).send(list_user);
+      
+    }
+  );
+ 
+  });
+
 };
 
+
+
+exports.getallmoderator=(req,res)=>{
+  //getting all users not the Admin
+  //get the id of user role: 
+  Role.findOne(
+    {
+     name:"moderator"
+    },
+    (err, roles) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+      user.find({roles:{ $in :roles._id}})
+      .then(list_user=>{
+        if (!list_user){
+          res.status(404).json({message:"error we can not finding this user id"});
+          return;
+        }
+
+        return res.status(200).send(list_user);
+      
+    }
+  );
+ 
+  });
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 exports.gettallUserRoles=(req,res)=>{
- //getting all users not the Admin 
- user.find()
- .then(list_user=>{
-   if (!list_user){
-     res.status(404).json({message:"error we can not finding this user id"});
-     return;
-   }
-
-   for (let i=0;i<list_user.length ; i++){
-     //console.log(list_user[i].roles)
-     roles_list=list_user[i].roles;
-     for (let j=0;j<roles_list.length;j++){
-       console.log(roles_list[j]);
-     }
-     
-   }
-
- });
-};
+  //getting all users not the Admin 
+  Quote.findById(req.params.quoteId)
+  .then(list_user=>{
+    if (!list_user){
+      res.status(404).json({message:"error we can not finding this user id"});
+      return;
+    }
+    //return res.status(200).send(list_user.categorys);
+    //maybe we can set list_user.categorys inside array make change in that new array and then set again the new array into the old one and then set the nex update :
+    update_quote=list_user.categorys
+    for (i=0;i<update_quote.length;i++){
+      console.log(update_quote[i]);
+        
+    }
+  });
+ };
+ */
+ 
+ 

@@ -60,60 +60,93 @@ app.post(
   controller.addCategory
 );
 
+
+app.get("/api/v1.0/category",
+[authJwt.verifyToken],
+controller.getallCategory
+);
+
+
 //fixing some issue here :
 app.delete("/api/v1.0/category/:categoryId",
 [authJwt.verifyToken,authJwt.isAdmin],
 controller.deleteCategory
 );
 
+app.put("/api/v1.0/category/:categoryId",
+[authJwt.verifyToken,authJwt.isAdmin],
+controller.updateCategory
+);
+
 
 app.get("/api/v1.0/currentuser",
-  [authJwt.verifyToken],
-   controller.currentUser)
+[authJwt.verifyToken],
+controller.currentUser);
 
 
 
 app.get("/api/v1.0/quotes",
-  [authJwt.verifyToken],
-  controller.getallQuotes
-);
+[authJwt.verifyToken],
+controller.getallQuotes);
 
 
 app.get("/api/v1.0/quotes/:quoteId",
-  [authJwt.verifyToken],
-    controller.getoneQuotes
-);
+[authJwt.verifyToken],
+controller.getoneQuotes);
 
 
 app.delete("/api/v1.0/quotes/:quoteId",
-  [authJwt.verifyToken,authJwt.isAdmin],
-  controller.deleteQuotes
-);
+[authJwt.verifyToken,authJwt.isAdmin],
+controller.deleteQuotes);
+
+
+app.put("/api/v1.0/quotes/:quoteId",
+[authJwt.verifyToken,authJwt.isAdmin],
+controller.updateQuotes)
 
 
 app.post("/api/v1.0/construction",
-  [authJwt.verifyToken],
-  controller.addIssuePropostion
-);
+[authJwt.verifyToken],
+controller.addIssuePropostion);
+
 
 app.get("/api/v1.0/construction",
 [authJwt.verifyToken,authJwt.isAdmin],
-controller.getallIssuePropostion
-);
+controller.getallIssuePropostion);
+
 
 app.delete("/api/v1.0/construction/:constructioId",
 [authJwt.verifyToken,authJwt.isAdmin],
-controller.deleteIssuePropostion
-);
+controller.deleteIssuePropostion);
 
 
 app.get("/api/v1.0/users",
+[authJwt.verifyToken,authJwt.isAdmin,authJwt.isModerator],
+controller.getallusers);
+
+
+app.get("/api/v1.0/admin",
 [authJwt.verifyToken,authJwt.isAdmin],
-controller.getallusers
+controller.getalladmin);
+
+
+app.get("/api/v1.0/modirator",
+[authJwt.verifyToken,authJwt.isAdmin],
+controller.getallmoderator);
+
+
+app.get("/api/v1.0/search/quotes/category/:categoryTitle",
+[authJwt.verifyToken],
+controller.SearchQuoteByCategory);
+
+
+
+/*
+app.get("/api/v1.0/search/quote/author/:author",
+[authJwt.verifyToken],
+controller.SearchQuoteByAuthor
 );
-
-
-
+*/
 
 
 };
