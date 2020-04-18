@@ -39,6 +39,11 @@ app.get("/api/v1.0/", (req, res) => {
   res.json({ message: "Welcome to AnimeQuo API ! " });
 });
 
+app.get('/', function(req, res) {
+  // res.send('Page under construction.');
+  res.json({success: true, msg: 'Page under construction.'});
+});
+
 // routes
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);

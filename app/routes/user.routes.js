@@ -140,6 +140,21 @@ app.get("/api/v1.0/search/quotes/category/:categoryTitle",
 controller.SearchQuoteByCategory);
 
 
+app.post("/api/v1.0/user/bookmark/:quoteId",
+[authJwt.verifyToken,authJwt.isUser],
+controller.adduserBookmark);
+
+
+app.get("/api/v1.0/user/bookmark",
+[authJwt.verifyToken,authJwt.isAdmin],
+controller.getuserBookmark);
+
+
+app.delete("/api/v1.0/user/bookmark/:quoteId",
+[authJwt.verifyToken,authJwt.isUser],
+controller.deleteuserBookmark);
+
+
 
 /*
 app.get("/api/v1.0/search/quote/author/:author",
@@ -147,6 +162,8 @@ app.get("/api/v1.0/search/quote/author/:author",
 controller.SearchQuoteByAuthor
 );
 */
+
+
 
 
 };

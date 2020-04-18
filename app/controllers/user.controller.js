@@ -4,6 +4,7 @@ var Category =require("../models/category.model");
 var issue_proposition=require("../models/issue_proposition");
 var user =require("../models/user.model");
 var Role =require("../models/role.model");
+var Bookmark=require("../models/bookmark.model");
 
 
 exports.allAccess = (req, res) => {
@@ -543,6 +544,58 @@ exports.getallmoderator=(req,res)=>{
 
 };
 
+
+exports.adduserBookmark=(req,res)=>{
+//add new quote to the bookmark list of this current user:
+const bookmark=new Bookmark({
+  owner:req.userId,
+  title:"Bookmark "+req.userId
+})
+  bookmark.save().then(data=>{
+    if (!data){
+      res.status(404).send({message:"Error in saving quote into bookmaek list "});
+    }
+      Bookmark.findByIdAndUpdate(
+        data._id,
+        {  $push : { "bookmarks" :req.params.quoteId}}
+        ).then(add_bookmark=>{
+          if(!add_bookmark)
+          {res.status(404).send({message:"Error in saving new id quote in bookmak"});}
+          
+          res.status(200).send({message:"succesfuly added new quote to Your Bookmark List"})
+        })
+
+  }).catch(err=>{
+    res.status(201).send({message:"Error "+err.message})
+  })
+};
+
+
+
+exports.deleteuserBookmark=(req,res)=>{
+  //deleting item (quote from the list of bookmark)
+//delete quote to the bookmark list of this current user:
+
+};
+
+
+
+
+
+
+
+exports.getuserBookmark=(req,res)=>{
+//get the list quote to the bookmark list of this current user:
+Bookmark.find({"owner":req.userId}).then(m_bookamrk=>{
+  if (!m_bookamrk){
+    res.status(404).send({message:"Error Bookmark List not Found !"})
+  }
+  res.status(200).send(m_bookamrk);
+}).catch(err=>{
+  res.status(201).send({message:"Error in getting my bookmark "+err});
+
+})
+};
 
 
 
