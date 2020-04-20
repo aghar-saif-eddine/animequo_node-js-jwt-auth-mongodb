@@ -2,6 +2,7 @@ const config = require("../config/auth.config");
 const db = require("../models");
 const User = db.user;
 const Role = db.role;
+var Bookmark=require("../models/bookmark.model");
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -38,6 +39,21 @@ exports.signup = (req, res) => {
               return;
             }
 
+            const bookmark=new Bookmark({
+              owner:user._id,
+              title:"Bookmark "+user._id
+            })
+              bookmark.save().then(data=>{
+                if (!data){
+                  res.status(404).send({message:"Error in saving quote into bookmaek list "});
+                }
+  
+                          
+            }).catch(errr=>{
+              res.status(201).send({message:"Error 1-2"+errr.message});
+            });
+
+            
             res.send({ message: "User was registered successfully!" });
           });
         }

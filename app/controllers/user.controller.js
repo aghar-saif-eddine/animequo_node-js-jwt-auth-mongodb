@@ -546,28 +546,29 @@ exports.getallmoderator=(req,res)=>{
 
 
 exports.adduserBookmark=(req,res)=>{
-//add new quote to the bookmark list of this current user:
-const bookmark=new Bookmark({
-  owner:req.userId,
-  title:"Bookmark "+req.userId
-})
-  bookmark.save().then(data=>{
-    if (!data){
-      res.status(404).send({message:"Error in saving quote into bookmaek list "});
-    }
-      Bookmark.findByIdAndUpdate(
-        data._id,
-        {  $push : { "bookmarks" :req.params.quoteId}}
+  Quote.findById(req.params.quoteId)
+    .then(find_quote=>{
+    if (!find_quote){res.status(404).send({message:"Quote not found"})}
+
+
+      Bookmark.findOneAndUpdate(
+        {"owner":req.userId},
+        {  $addToSet : { "bookmarks" :req.params.quoteId}}
         ).then(add_bookmark=>{
           if(!add_bookmark)
-          {res.status(404).send({message:"Error in saving new id quote in bookmak"});}
+          {res.status(404).send({message:"Error 1-0 in saving new id quote in bookmak"});}
           
           res.status(200).send({message:"succesfuly added new quote to Your Bookmark List"})
-        })
+        }).catch(err=>{
+          res.status(201).send({message:"Error 1-1"+err.message});
+        });
 
-  }).catch(err=>{
-    res.status(201).send({message:"Error "+err.message})
-  })
+
+  }).catch(er=>{
+    res.status(201).send({message:er.message});
+  });
+
+
 };
 
 
@@ -575,40 +576,46 @@ const bookmark=new Bookmark({
 exports.deleteuserBookmark=(req,res)=>{
   //deleting item (quote from the list of bookmark)
 //delete quote to the bookmark list of this current user:
+Quote.findById(req.params.quoteId)
+  .then(find_quote=>{
+    if (!find_quote){
+      res.status(404).send({message:"Quote not found with this Id"})}
+
+
+        Bookmark.updateOne(
+          {"owner":req.userId},
+          {$pull:{"bookmarks":{ $in: [req.params.quoteId] }}}
+          ).then(pull_bookmark=>{
+            if (!pull_bookmark) {res.status(404).send({message:"cloud not delete quote from your bookmark list"})}
+            res.status(200).send(pull_bookmark);
+          }).catch(errr=>{
+            res.status(201).send({message:errr.message});
+          });
+
+
+  }).catch(er=>{
+    res.status(201).send({message:er.message});
+  });
+
+
 
 };
-
-
-
 
 
 
 
 exports.getuserBookmark=(req,res)=>{
 //get the list quote to the bookmark list of this current user:
-Bookmark.find({"owner":req.userId}).then(m_bookamrk=>{
-  if (!m_bookamrk){
+Bookmark.findOne({"owner":req.userId}).then(get_bookamrk=>{
+  if (!get_bookamrk){
     res.status(404).send({message:"Error Bookmark List not Found !"})
   }
-  res.status(200).send(m_bookamrk);
+  res.status(200).json(get_bookamrk);
 }).catch(err=>{
   res.status(201).send({message:"Error in getting my bookmark "+err});
 
 })
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
