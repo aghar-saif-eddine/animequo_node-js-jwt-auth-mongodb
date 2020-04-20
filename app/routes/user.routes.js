@@ -141,17 +141,17 @@ controller.SearchQuoteByCategory);
 
 
 app.post("/api/v1.0/user/bookmark/:quoteId",
-[authJwt.verifyToken,authJwt.isAdmin],
+[authJwt.verifyToken,authJwt.isUser],
 controller.adduserBookmark);
 
 
 app.get("/api/v1.0/user/bookmark",
-[authJwt.verifyToken,authJwt.isAdmin],
+[authJwt.verifyToken,authJwt.isUser],
 controller.getuserBookmark);
 
 
 app.delete("/api/v1.0/user/bookmark/:quoteId",
-[authJwt.verifyToken,authJwt.isAdmin],
+[authJwt.verifyToken,authJwt.isUser],
 controller.deleteuserBookmark);
 
 
