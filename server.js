@@ -20,6 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = require("./app/models");
 const Role = db.role;
 
+
 db.mongoose
   .connect(`${dbConfig.DB_CONNECT}`, {
     useNewUrlParser: true,
