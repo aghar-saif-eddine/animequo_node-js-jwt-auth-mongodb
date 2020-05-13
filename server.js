@@ -2,6 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const dbConfig = require("./app/config/db.config");
+var session = require('express-session');
+require('dotenv').config();
 
 const app = express();
 
@@ -16,6 +18,12 @@ app.use(bodyParser.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
+
+//int the session 
+app.use(session({secret:process.env.SECRET_SESSION,secret: 'keyboard cat',
+resave: false,
+saveUninitialized: true,
+cookie: { secure: true }}));
 
 const db = require("./app/models");
 const Role = db.role;

@@ -20,5 +20,29 @@ module.exports = function(app) {
   );
 
   //user login 
-  app.post("/api/v1.0/auth/signin", controller.signin);
+  app.post("/api/v1.0/auth/signin",
+  controller.signin);
+
+
+   //user reset password user :
+   app.post("/api/v1.0/auth/forgotpassword",
+   controller.forgotpassword);
+
+   //in thsi route we need just to verif :
+   //req.body.code == User.passwordcode ( seach using email that pass with req.session.email )
+   app.get("/api/v1.0/auth/recoverypassword",
+   controller.recoverypassword);
+
+
+   //in this route we need to work with 2 case 
+   app.post("/api/v1.0/auth/changepassword",
+   controller.changepassword);
+
+   app.post("/api/v1.0/auth/logout",
+   controller.logout);
+
+
 };
+
+
+ 
