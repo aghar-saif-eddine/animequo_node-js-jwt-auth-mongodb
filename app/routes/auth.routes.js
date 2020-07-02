@@ -33,6 +33,7 @@ module.exports = function(app) {
    app.get("/api/v1.0/auth/recoverypassword",
    controller.recoverypassword);
 
+   
 
    //in this route we need to work with 2 case 
    app.post("/api/v1.0/auth/changepassword",
