@@ -24,6 +24,7 @@ module.exports = function(app) {
   controller.signin);
 
 
+
    //user reset password user :
    app.post("/api/v1.0/auth/forgotpassword",
    controller.forgotpassword);
