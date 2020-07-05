@@ -53,6 +53,7 @@ app.get('/', function(req, res) {
   res.json({success: true, msg: 'Page under construction.'});
 });
 
+
 // routes
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
