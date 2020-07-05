@@ -9,7 +9,7 @@ stages:
     - staging
     - production
 
-dev:
+staging:
     type: deploy
     stage: staging
     image: ruby:latest
