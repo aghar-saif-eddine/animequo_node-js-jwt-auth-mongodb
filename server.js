@@ -42,11 +42,6 @@ db.mongoose
     console.error("Connection error", err);
     process.exit();
   });
-// simple route
-app.get("/", (req, res) => {
-  res.redirect('/api/v1.0/');
-});
-
 
 // simple route
 app.get("/api/v1.0/", (req, res) => {
